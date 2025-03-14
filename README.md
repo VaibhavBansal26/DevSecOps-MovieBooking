@@ -117,6 +117,39 @@ docker run -d --name sonar -p 9000:9000 sonarqube:lts-community
 
 SonarQube : http://52.86.126.243:9000/
 
+
+Administration -> User -> Create Sonar Token
+
+Add this token in Jenkins -> Managae  Jenkins -> Security -> Credentials -> global
+
+1. Add Sonar Token
+2. Add Docker Credential
+3. Add Email credentials
+
+Create Sonarqube Webhook
+
+Administration -> Configuration -> webhook - create
+
+Create webhook so that SonarQube can interact with jenkins
+
+webhook url: http://52.86.126.243:8080/sonarqube-webhook/
+
+
+# Configuring Jenkins Tools
+
+1. Configure java installations
+2. Configure Sonarqueb Scanner
+3. Configure Docker
+4. Configure Node js
+5. Configure owasp dependency check
+
+# System Configuration
+
+1. Sonarqube servers
+2. Email for Notifications (smtp.gmail..com, port:465)
+3. Default Content Type - html
+4. Enable Default Triggers
+
 # CREATION OF EKS CLUSTER
 =================================================
 
@@ -224,12 +257,18 @@ eksctl create cluster --name=vb-eks \
 It will take 5-10 minutes to create the cluster
 Goto EKS Console and verify the cluster.
 
+**Install NPM**
+
+```
+sudo apt install npm
+```
+
 (b)
 
 ```
 eksctl utils associate-iam-oidc-provider \
     --region us-east-1 \
-    --cluster kastro-eks \
+    --cluster vb-eks \
     --approve
 
 ```
@@ -239,7 +278,7 @@ eksctl utils associate-iam-oidc-provider \
 Before executing the below command, in the 'ssh-public-key' keep the  '<PEM FILE NAME>' (dont give .pem. Just give the pem file name) which was used to create Jenkins Server
 
 ```
-eksctl create nodegroup --cluster=kastro-eks \
+eksctl create nodegroup --cluster=vb-eks \
                        --region=us-east-1 \
                        --name=node2 \
                        --node-type=t3.medium \
@@ -248,7 +287,7 @@ eksctl create nodegroup --cluster=kastro-eks \
                        --nodes-max=4 \
                        --node-volume-size=20 \
                        --ssh-access \
-                       --ssh-public-key=Kastro \
+                       --ssh-public-key=bms \
                        --managed \
                        --asg-access \
                        --external-dns-access \
@@ -256,6 +295,7 @@ eksctl create nodegroup --cluster=kastro-eks \
                        --appmesh-access \
                        --alb-ingress-access
 ```
+
 
 
 
