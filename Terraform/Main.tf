@@ -1,10 +1,10 @@
-resource "aws_security_group" "Project-SG" {
-  name        = "Project-SG"
-  description = "Open 22,443,80,8080,9000"
+resource "aws_security_group" "Project-MB" {
+  name        = "Project-MB"
+  description = "Open 22,443,80,8080,9000,8081,9100,25,6443,3000,30000,30001,465"
 
   # Define a single ingress rule to allow traffic on all specified ports
   ingress = [
-    for port in [22, 80, 443, 8080, 9000, 3000] : {
+    for port in [22,443,80,8080,9000,8081,9100,25,6443,3000,30000,30001,465] : {
       description      = "TLS from VPC"
       from_port        = port
       to_port          = port
@@ -25,7 +25,7 @@ resource "aws_security_group" "Project-SG" {
   }
 
   tags = {
-    Name = "Project-SG"
+    Name = "Project-MB"
   }
 }
 
@@ -34,11 +34,11 @@ resource "aws_instance" "web" {
   ami                    = "ami-04b4f1a9cf54c11d0"
   instance_type          = "t2.large"
   key_name               = "bms"
-  vpc_security_group_ids = [aws_security_group.Project-SG.id]
+  vpc_security_group_ids = [aws_security_group.Project-MB.id]
   user_data              = templatefile("./resource.sh", {})
 
   tags = {
-    Name = "FApp"
+    Name = "BMS"
   }
   root_block_device {
     volume_size = 30
