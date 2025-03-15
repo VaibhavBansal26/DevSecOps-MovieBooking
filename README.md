@@ -6,6 +6,22 @@ Full Deployment Pipe - Terraform, EC2, Amazon EKS, Docker, Jenkins, SonarQube, O
 ![app](https://res.cloudinary.com/vaibhav-codexpress/image/upload/v1741897079/diagram-export-13-03-2025-16_12_04_ynag9b.png)
 
 
+![jenkins](https://res.cloudinary.com/vaibhav-codexpress/image/upload/v1742055376/Screenshot_2025-03-15_at_12.12.30_PM_l0u2ek.png)
+
+![sonar](https://res.cloudinary.com/vaibhav-codexpress/image/upload/v1742055374/Screenshot_2025-03-15_at_12.12.40_PM_kwue2x.png)
+
+![prom1](https://res.cloudinary.com/vaibhav-codexpress/image/upload/v1742055477/Screenshot_2025-03-15_at_12.17.37_PM_dktbyr.png)
+
+![prom2](https://res.cloudinary.com/vaibhav-codexpress/image/upload/v1742055377/Screenshot_2025-03-15_at_12.12.15_PM_tfvo9s.png)
+
+![grafa](https://res.cloudinary.com/vaibhav-codexpress/image/upload/v1742055375/Screenshot_2025-03-15_at_12.12.01_PM_oukdbn.png)
+
+![EKS](https://res.cloudinary.com/vaibhav-codexpress/image/upload/v1742055374/Screenshot_2025-03-15_at_12.15.16_PM_uf3smc.png)
+
+![bms](https://res.cloudinary.com/vaibhav-codexpress/image/upload/v1742055376/Screenshot_2025-03-15_at_12.12.58_PM_vkvdu8.png)
+
+![sg](https://res.cloudinary.com/vaibhav-codexpress/image/upload/v1742055371/Screenshot_2025-03-15_at_12.15.48_PM_zeuekv.png)
+
 Configure Infrastructure in AWS using Terraform
 
 1. Provisioning resources in AWS
