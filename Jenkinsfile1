@@ -68,7 +68,7 @@ pipeline {
                     withDockerRegistry(credentialsId: 'docker-cred', toolName: 'docker') {
                         sh ''' 
                         echo "Building Docker image..."
-                        docker build --no-cache -t vaibhavbansal26/bms:latest -f frontend/Dockerfile bms
+                        docker build --no-cache -t vaibhavbansal26/bms:latest -f frontend/Dockerfile frontend
 
                         echo "Pushing Docker image to registry..."
                         docker push vaibhavbansal26/bms:latest

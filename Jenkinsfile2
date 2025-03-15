@@ -84,7 +84,7 @@ pipeline {
                     withDockerRegistry(credentialsId: 'docker', toolName: 'docker') {
                         sh ''' 
                         echo "Building Docker image..."
-                        docker build --no-cache -t $DOCKER_IMAGE -f fronend/Dockerfile bms-app
+                        docker build --no-cache -t $DOCKER_IMAGE -f fronend/Dockerfile frontend
 
                         echo "Pushing Docker image to Docker Hub..."
                         docker push $DOCKER_IMAGE

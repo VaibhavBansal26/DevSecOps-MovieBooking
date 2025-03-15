@@ -299,8 +299,16 @@ eksctl create nodegroup --cluster=vb-eks \
 
 
 
+Before Building Jenkins Pipeline for deploying in Kubernetes
 
-
-
-
+```
+ps aux | grep jenkins
+sudo -su jenkins
+aws configure
+aws sts get-caller-identity #verify user
+exit
+sudo systemctl restart jenkins
+sudo -su jenkins
+aws eks update-kubeconfig --name vb-eks --region us-east-1
+```
 
