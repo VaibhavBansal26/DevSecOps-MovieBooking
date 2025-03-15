@@ -312,3 +312,294 @@ sudo -su jenkins
 aws eks update-kubeconfig --name vb-eks --region us-east-1
 ```
 
+# Monitoring Application using prometheus and graffana
+
+Launch an EC2 instance for monitoring
+t2.medium, AMI 22.04 version
+
+SSHing in to EC2 (monitoring) Instance
+
+```
+sudo apt update
+```
+
+Connect to the Monitoring Server VM (Execute in Monitoring Server VM)
+
+Create a dedicated Linux user sometimes called a 'system' account for Prometheus
+
+```
+sudo useradd \
+    --system \
+    --no-create-home \
+    --shell /bin/false prometheus
+```
+
+Move the Prometheus binary and a promtool to the /usr/local/bin/. promtool is used to check configuration files and Prometheus rules.
+
+```
+sudo mv prometheus promtool /usr/local/bin/
+```
+
+Move console libraries to the Prometheus configuration directory
+
+```
+sudo mv consoles/ console_libraries/ /etc/prometheus/
+```
+
+Move the example of the main Prometheus configuration file
+
+```
+sudo mv prometheus.yml /etc/prometheus/prometheus.yml
+```
+
+Set the correct ownership for the /etc/prometheus/ and data directory
+
+```
+sudo chown -R prometheus:prometheus /etc/prometheus/ /data/
+```
+
+Delete the archive and a Prometheus tar.gz file 
+
+```
+cd
+You are in ~ path
+rm -rf prometheus-2.47.1.linux-amd64.tar.gz
+
+prometheus --version
+You will see as "version 2.47.1"
+
+prometheus --help
+```
+
+We’re going to use Systemd, which is a system and service manager for Linux operating systems. For that, we need to create a Systemd unit configuration file.
+
+```
+sudo vi /etc/systemd/system/prometheus.service ---> Paste the below content ---->
+
+[Unit]
+Description=Prometheus
+Wants=network-online.target
+After=network-online.target
+StartLimitIntervalSec=500
+StartLimitBurst=5
+[Service]
+User=prometheus
+Group=prometheus
+Type=simple
+Restart=on-failure
+RestartSec=5s
+ExecStart=/usr/local/bin/prometheus \
+  --config.file=/etc/prometheus/prometheus.yml \
+  --storage.tsdb.path=/data \
+  --web.console.templates=/etc/prometheus/consoles \
+  --web.console.libraries=/etc/prometheus/console_libraries \
+  --web.listen-address=0.0.0.0:9090 \
+  --web.enable-lifecycle
+[Install]
+WantedBy=multi-user.target
+```
+
+```
+#To automatically start the Prometheus after reboot run the below command
+
+sudo systemctl enable prometheus
+
+
+#Start the Prometheus
+
+sudo systemctl start prometheus
+
+#Check the status of Prometheus
+sudo systemctl status prometheus
+
+#Open Port No. 9090 for Monitoring Server VM and Access Prometheus, Also ADD 9090 in Security groups
+54.234.81.159:9090
+```
+
+Click on 'Status' dropdown ---> Click on 'Targets' ---> You can see 'Prometheus (1/1 up)' ----> It scrapes itself every 15 seconds by default. target is jenkins
+
+
+# Install Node Exporter (Execute in Monitoring Server VM)
+
+You are in ~ path now
+
+Create a system user for Node Exporter and download Node Exporter:
+
+```
+sudo useradd --system --no-create-home --shell /bin/false node_exporter
+wget https://github.com/prometheus/node_exporter/releases/download/v1.6.1/node_exporter-1.6.1.linux-amd64.tar.gz
+
+#Extract Node Exporter files, move the binary, and clean up:
+tar -xvf node_exporter-1.6.1.linux-amd64.tar.gz
+sudo mv node_exporter-1.6.1.linux-amd64/node_exporter /usr/local/bin/
+rm -rf node_exporter*
+
+node_exporter --version
+
+```
+
+Create a systemd unit configuration file for Node Exporter:
+
+```
+sudo vi /etc/systemd/system/node_exporter.service
+
+Add the following content to the node_exporter.service file:
+[Unit]
+Description=Node Exporter
+Wants=network-online.target
+After=network-online.target
+
+StartLimitIntervalSec=500
+StartLimitBurst=5
+
+[Service]
+User=node_exporter
+Group=node_exporter
+Type=simple
+Restart=on-failure
+RestartSec=5s
+ExecStart=/usr/local/bin/node_exporter --collector.logind
+
+[Install]
+WantedBy=multi-user.target
+
+```
+
+Note: Replace --collector.logind with any additional flags as needed.
+
+Enable and start Node Exporter:
+
+```
+sudo systemctl enable node_exporter
+sudo systemctl start node_exporter
+```
+
+Verify the Node Exporter's status:
+
+```
+sudo systemctl status node_exporter
+```
+
+
+**Configure Prometheus Plugin Integration**
+
+As of now we created Prometheus service, but we need to add a job in order to fetch the details by node exporter. So for that we need to create 2 jobs, one with 'node exporter' and the other with 'jenkins' as shown below;
+
+Integrate Jenkins with Prometheus to monitor the CI/CD pipeline.
+
+Prometheus Configuration:
+
+To configure Prometheus to scrape metrics from Node Exporter and Jenkins, you need to modify the prometheus.yml file. 
+The path of prometheus.yml is; cd /etc/prometheus/ ----> ls -l ----> You can see the "prometheus.yml" file ----> sudo vi prometheus.yml ----> You will see the content and also there is a default job called "Prometheus" Paste the below content at the end of the file;
+
+  - job_name: 'node_exporter'
+    static_configs:
+      - targets: ['<MonitoringVMip>:9100']
+
+  - job_name: 'jenkins'
+    metrics_path: '/prometheus'
+    static_configs:
+      - targets: ['<your-jenkins-ip>:<your-jenkins-port>']
+
+
+
+Also replace the public ip of monitorting VM. Dont change 9100. Even though the Monitoring server is running on 9090, dont change 9100 in the above script
+
+Check the validity of the configuration file:
+
+```
+promtool check config /etc/prometheus/prometheus.yml
+```
+
+Reload the Prometheus configuration without restarting:
+
+```
+curl -X POST http://localhost:9090/-/reload
+
+Access Prometheus in browser (if already opened, just reload the page):
+http://<your-prometheus-ip>:9090/targets
+
+```
+
+For Node Exporter you will see (0/1) in red colour. To resolve this, open Port number 9100 for Monitoring VM 
+
+
+-------------------------------------------------------------------
+6.4. Install Grafana (Execute in Monitoring Server VM)
+-------------------------------------------------------------------
+You are currently in /etc/Prometheus path.
+
+```
+Install Grafana on Monitoring Server;
+
+Step 1: Install Dependencies:
+First, ensure that all necessary dependencies are installed:
+
+
+sudo apt-get update
+sudo apt-get install -y apt-transport-https software-properties-common
+
+```
+
+```
+Step 2: Add the GPG Key:
+cd ---> You are now in ~ path
+Add the GPG key for Grafana:
+wget -q -O - https://packages.grafana.com/gpg.key | sudo apt-key add -
+
+```
+
+
+```
+Step 3: Add Grafana Repository:
+Add the repository for Grafana stable releases:
+echo "deb https://packages.grafana.com/oss/deb stable main" | sudo tee -a /etc/apt/sources.list.d/grafana.list
+
+Step 4: Update and Install Grafana:
+Update the package list and install Grafana:
+sudo apt-get update
+sudo apt-get -y install grafana
+
+Step 5: Enable and Start Grafana Service:
+To automatically start Grafana after a reboot, enable the service:
+
+sudo systemctl enable grafana-server
+
+Start Grafana:
+sudo systemctl start grafana-server
+
+Step 6: Check Grafana Status:
+Verify the status of the Grafana service to ensure it's running correctly:
+sudo systemctl status grafana-server
+
+
+Step 7: Access Grafana Web Interface:
+The default port for Grafana is 3000
+http://<monitoring-server-ip>:3000
+
+```
+
+Default id and password is "admin"
+
+
+You will see the Grafana dashboard
+
+# Adding Data Source in Grafana
+The first thing that we have to do in Grafana is to add the data source
+Add the data source;
+
+
+# Adding Dashboards in Grafana 
+(URL: https://grafana.com/grafana/dashboards/1860-node-exporter-full/) 
+Lets add another dashboard for Jenkins;
+(URL: https://grafana.com/grafana/dashboards/9964-jenkins-performance-and-health-overview/)
+
+
+```
+kubectl get nodes
+kubectl get svc
+```
+
+
+
+

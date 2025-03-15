@@ -44,3 +44,19 @@ resource "aws_instance" "web" {
     volume_size = 30
   }
 }
+
+
+resource "aws_instance" "monitoring" {
+  ami                    = "ami-04b4f1a9cf54c11d0"
+  instance_type          = "t2.large"
+  key_name               = "bms"
+  vpc_security_group_ids = [aws_security_group.Project-MB-monitoring.id]
+  user_data              = templatefile("./resource_monitoring.sh", {})
+
+  tags = {
+    Name = "BMS-Monitoring"
+  }
+  root_block_device {
+    volume_size = 30
+  }
+}

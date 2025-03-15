@@ -52,7 +52,7 @@ pipeline {
         stage('Install Dependencies') {
             steps {
                 sh '''
-                cd fronend
+                cd frontend
                 ls -la  # Verify package.json exists
                 if [ -f package.json ]; then
                     rm -rf node_modules package-lock.json  # Remove old dependencies
@@ -81,10 +81,10 @@ pipeline {
         stage('Docker Build & Push') {
             steps {
                 script {
-                    withDockerRegistry(credentialsId: 'docker', toolName: 'docker') {
+                    withDockerRegistry(credentialsId: 'docker-cred', toolName: 'docker') {
                         sh ''' 
                         echo "Building Docker image..."
-                        docker build --no-cache -t $DOCKER_IMAGE -f fronend/Dockerfile frontend
+                        docker build --no-cache -t $DOCKER_IMAGE -f frontend/Dockerfile frontend
 
                         echo "Pushing Docker image to Docker Hub..."
                         docker push $DOCKER_IMAGE
