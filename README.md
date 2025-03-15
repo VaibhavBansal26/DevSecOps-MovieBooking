@@ -1,6 +1,10 @@
 # DevSecOps-MovieBooking
 Full Deployment Pipe - Terraform, EC2, Amazon EKS, Docker, Jenkins, SonarQube, Owasp, Trivy, AgroCD, Kubernetes
 
+# System Architecture
+
+![app](https://res.cloudinary.com/vaibhav-codexpress/image/upload/v1741897079/diagram-export-13-03-2025-16_12_04_ynag9b.png)
+
 
 Configure Infrastructure in AWS using Terraform
 
